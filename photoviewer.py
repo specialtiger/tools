@@ -9,7 +9,7 @@ os.getcwd()
 os.chdir("/Users/specialtiger/Downloads/")
 print(os.getcwd())
 k_screen_w = 1280
-k_screen_h = 720
+k_screen_h = 1280
 
 def sort_func_png(filename):
 	m = re.match(".*\(([0-9]+)\).png", filename)
@@ -18,7 +18,7 @@ def sort_func_png(filename):
 	return filename
 
 def sort_func(filename):
-	m = re.match("([0-9]+).jpg", filename)
+	m = re.match("([0-9]+).(jpg|png)", filename)
 	if m:
 		return int(m.group(1)) or 0
 	return sort_func_png(filename)
@@ -55,9 +55,22 @@ class UiViewer(object):
 		self.lb.pack()
 
 		self.image_frame = Frame(self.top)
+		frame = self.image_frame
 		self.image_frame.pack(side=LEFT)
-		self.canvas = Canvas(self.image_frame, bg="black", width=k_screen_w, height=k_screen_h)
-		self.canvas.pack()
+		canvas=Canvas(frame,bg='black',width=k_screen_w,height=k_screen_h,scrollregion=(0,0,1280,1280))
+		hbar=Scrollbar(frame,orient=HORIZONTAL)
+		hbar.pack(side=BOTTOM,fill=X)
+		hbar.config(command=canvas.xview)
+		vbar=Scrollbar(frame,orient=VERTICAL)
+		vbar.pack(side=RIGHT,fill=Y)
+		vbar.config(command=canvas.yview)
+		canvas.config(width=k_screen_w,height=k_screen_h)
+		canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
+		canvas.pack(side=LEFT,expand=True,fill=BOTH)
+
+		self.canvas = canvas
+		# self.canvas = Canvas(self.image_frame, bg="black", width=k_screen_w, height=k_screen_h)
+		# self.canvas.pack()
 
 		self.reload_files()
 
@@ -78,13 +91,13 @@ class UiViewer(object):
 		self.canvas.delete(ALL)
 		self.add_img(filename)
 
-	def add_img(self, filename, x=0, y=0, scale=0.7):
+	def add_img(self, filename, x=0, y=0, scale=1.0):
 		image = Image.open(filename).convert('RGB')
 		[w, h] = image.size
 		# scale = k_screen_h/h
 		image = image.resize((int(w*scale), int(h*scale)), Image.ANTIALIAS)
 		pimage = ImageTk.PhotoImage(image)
-		self.canvas.create_image(k_screen_w/2+x, k_screen_h/2-y, image=pimage)
+		self.canvas.create_image(k_screen_w/2+x, h/2-y, image=pimage)
 		self.imgs.append(pimage)
 
 def test_sort():
